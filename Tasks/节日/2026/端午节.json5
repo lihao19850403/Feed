@@ -1,0 +1,17 @@
+/*
+ 【任务单】
+ 以json格式记录任务：
+ 1，单次执行的任务：填写startTime和endTime，且startTime和endTime值相同；不填写intervalDays；
+ 2，间隔执行多次的任务：填写startTime、endTime和intervalDays；
+ 3，无限多次执行的任务：填写startTime，不填写endTime；最后填写intervalDays。
+ 注：节假日或者重大事件日，可以增加一项“special”，值是“true”。
+ */
+{
+  "name": "端午节",
+  "description": "端午节放假三天。",
+  "icon": "🐲",
+  "startTime": "20260619",
+  "endTime": "20260621",
+  "intervalDays": "1",
+  "special": "true"
+}
