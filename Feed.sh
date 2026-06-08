@@ -1,7 +1,7 @@
-#!/bin/zsh
+#!/bin/bash
 
 # 控制台版Todo日历。请先填写任务单所在目录路径。
-TASKS_PATH="/Users/li.hao85/Documents/install/Feed/Tasks"
+TASKS_PATH=""
 
 HIGH_LIGHT_COLOR="\e[96m"
 YELLOW_COLOR="\e[33m"
@@ -15,7 +15,13 @@ LEAP_MONTH_DAYS=(31 29 31 30 31 30 31 31 30 31 30 31)
 
 CURRENT_YEAR=$(date "+%Y")
 CURRENT_MONTH=$(date "+%m")
+if [ "${CURRENT_MONTH:0:1}" -eq "0" ]; then
+  CURRENT_MONTH=${CURRENT_MONTH:1:1}
+fi
 CURRENT_DAY=$(date "+%d")
+if [ "${CURRENT_DAY:0:1}" -eq "0" ]; then
+  CURRENT_DAY=${CURRENT_DAY:1:1}
+fi
 CURRENT_WEEK_DAY_INDEX=$(date +%w)
 
 SPECIAL_INTRODUCTION=""
@@ -61,14 +67,14 @@ function parseTasks() {
         continue
       fi
       startMonth=${startTimeValue:4:2}
-	  if [ "${startMonth:0:1}" -eq "0" ]; then
+      if [ "${startMonth:0:1}" -eq "0" ]; then
         startMonth=${startMonth:1:1}
       fi
       if [ $((startYear)) -eq $((CURRENT_YEAR)) ] && [ $((startMonth)) -gt $((CURRENT_MONTH)) ]; then
         continue
       fi
       startDay=${startTimeValue:6:2}
-	  if [ "${startDay:0:1}" -eq "0" ]; then
+      if [ "${startDay:0:1}" -eq "0" ]; then
         startDay=${startDay:1:1}
       fi
       # 解析endTime。
@@ -83,7 +89,7 @@ function parseTasks() {
         continue
       fi
       endMonth=${endTimeValue:4:2}
-	  if [ "${endMonth:0:1}" -eq "0" ]; then
+      if [ "${endMonth:0:1}" -eq "0" ]; then
         endMonth=${endMonth:1:1}
       fi
       if [ $((endYear)) -eq $((startYear)) ]; then
@@ -92,7 +98,7 @@ function parseTasks() {
         fi
       fi
       endDay=${endTimeValue:6:2}
-	  if [ "${endDay:0:1}" -eq "0" ]; then
+	    if [ "${endDay:0:1}" -eq "0" ]; then
         endDay=${endDay:1:1}
       fi
       if [ $((endYear)) -eq $((startYear)) ] && [ $((endMonth)) -eq $((startMonth)) ]; then
@@ -149,7 +155,7 @@ function parseTasks() {
           break
         fi
         nextTaskMonth=${nextTaskValue:4:2}
-		if [ "${nextTaskMonth:0:1}" -eq "0" ]; then
+		    if [ "${nextTaskMonth:0:1}" -eq "0" ]; then
           nextTaskMonth=${nextTaskMonth:1:1}
         fi
         if [ $((nextTaskYear)) -eq $((CURRENT_YEAR)) ] && [ $((nextTaskMonth)) -gt $((CURRENT_MONTH)) ]; then
@@ -237,7 +243,7 @@ function run() {
   done
 
   # 解析Todo事件。
-  parseTasks $TASKS_PATH
+  parseTasks "$TASKS_PATH"
 
   #########
   # PRINT #
@@ -399,4 +405,9 @@ function run() {
   printf "%s""$NORMAL_COLOR";printf "\n"
 }
 
-run
+tasksPathLength=${#TASKS_PATH}
+if [ $((tasksPathLength)) -eq 0 ]; then
+  printf "%s""$NORMAL_COLOR";printf "\n 请先填写任务单所在目录路径。\n\n"
+else
+  run
+fi
