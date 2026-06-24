@@ -11,6 +11,9 @@ WEEK_DAY_NAMES=("日" "一" "二" "三" "四" "五" "六")
 NORMAL_MONTH_DAYS=(31 28 31 30 31 30 31 31 30 31 30 31)
 LEAP_MONTH_DAYS=(31 29 31 30 31 30 31 31 30 31 30 31)
 
+MIN_YEAR=1900
+MAX_YEAR=2200
+
 # 当前日期、时间和Todo任务信息。
 
 CURRENT_YEAR=$(date "+%Y")
@@ -22,7 +25,12 @@ CURRENT_DAY=$(date "+%d")
 if [ "${CURRENT_DAY:0:1}" -eq "0" ]; then
   CURRENT_DAY=${CURRENT_DAY:1:1}
 fi
-CURRENT_WEEK_DAY_INDEX=$(date +%w)
+CURRENT_WEEK_DAY_INDEX=$(date -j -f "%Y-%m-%d" "${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DAY}" "+%u")
+if [ "${CURRENT_WEEK_DAY_INDEX}" -eq "7" ]; then
+  CURRENT_WEEK_DAY_INDEX=0
+fi
+
+# 一些计算结果。
 
 SPECIAL_INTRODUCTION=""
 CURRENT_SPECIAL_TASKS=()
@@ -31,6 +39,24 @@ CURRENT_SPECIAL_TASKS_LENGTH=()
 TASKS_INTRODUCTION=""
 CURRENT_MONTH_TASKS=()
 CURRENT_MONTH_TASKS_LENGTH=()
+
+# 记录本次输出了多少行，用于屏幕刷新。
+CURRENT_OUTPUT_LINES_COUNT=0
+SPECIAL_LINES_COUNT=0
+TASKS_LINES_COUNT=0
+
+# 重置计算结果。
+function resetResults() {
+  SPECIAL_INTRODUCTION=""
+  CURRENT_SPECIAL_TASKS=()
+  CURRENT_SPECIAL_TASKS_LENGTH=()
+  TASKS_INTRODUCTION=""
+  CURRENT_MONTH_TASKS=()
+  CURRENT_MONTH_TASKS_LENGTH=()
+  CURRENT_OUTPUT_LINES_COUNT=0
+  SPECIAL_LINES_COUNT=0
+  TASKS_LINES_COUNT=0
+}
 
 # 判断是否闰年。返回值0表示不是闰年，返回值1表示是闰年。
 function checkIfLeapYear() {
@@ -82,7 +108,7 @@ function parseTasks() {
       endTimeValue=${endTimeValue#*\"}
       endTimeValue=${endTimeValue%%\"*}
       if [ $((endTimeValue)) -eq 0 ]; then
-        endTimeValue="22001231"
+        endTimeValue="${MAX_YEAR}1231"
       fi
       endYear=${endTimeValue:0:4}
       if [ $((endYear)) -lt $((startYear)) ] || [ $((endYear)) -lt $((CURRENT_YEAR)) ]; then
@@ -133,11 +159,13 @@ function parseTasks() {
         # 构造特殊事件介绍。
         if [[ $SPECIAL_INTRODUCTION != *$iconValue* ]]; then
           SPECIAL_INTRODUCTION="$SPECIAL_INTRODUCTION"" $iconValue\t$descriptionValue\n"
+          ((SPECIAL_LINES_COUNT+=1))
         fi
       else
         # 构造Todo任务介绍。
         if [[ $TASKS_INTRODUCTION != *$iconValue* ]]; then
           TASKS_INTRODUCTION="$TASKS_INTRODUCTION"" $iconValue\t$descriptionValue\n"
+          ((TASKS_LINES_COUNT+=1))
         fi
       fi
       # 计算事件在日历中的显示情况。
@@ -158,29 +186,31 @@ function parseTasks() {
 		    if [ "${nextTaskMonth:0:1}" -eq "0" ]; then
           nextTaskMonth=${nextTaskMonth:1:1}
         fi
-        if [ $((nextTaskYear)) -eq $((CURRENT_YEAR)) ] && [ $((nextTaskMonth)) -gt $((CURRENT_MONTH)) ]; then
-          break
-        fi
-        if [ $((nextTaskMonth)) -eq $((CURRENT_MONTH)) ]; then
-          nextTaskDay=${nextTaskValue:6:2}
-          if [ "${nextTaskDay:0:1}" -eq "0" ]; then
-            nextTaskDay=${nextTaskDay:1:1}
+        if [ $((nextTaskYear)) -eq $((CURRENT_YEAR)) ]; then
+          if [ $((nextTaskMonth)) -gt $((CURRENT_MONTH)) ]; then
+            break
           fi
-          nextTaskDayIndex=$((nextTaskDay - 1))
-          newIconLength=${#iconValue}
-          if [ $((newIconLength % 2)) -ne 0 ]; then
-            newIconLength=$((newIconLength + 1))
-          fi
-          if [ "$specialValue" = "true" ]; then
-            oldTask=${CURRENT_SPECIAL_TASKS[nextTaskDayIndex]}
-            oldTasksLength=$((CURRENT_SPECIAL_TASKS_LENGTH[nextTaskDayIndex]))
-            CURRENT_SPECIAL_TASKS[nextTaskDayIndex]="$oldTask""$iconValue"
-            CURRENT_SPECIAL_TASKS_LENGTH[nextTaskDayIndex]=$((oldTasksLength + newIconLength))
-          else
-            oldTask=${CURRENT_MONTH_TASKS[nextTaskDayIndex]}
-            oldTasksLength=$((CURRENT_MONTH_TASKS_LENGTH[nextTaskDayIndex]))
-            CURRENT_MONTH_TASKS[nextTaskDayIndex]="$oldTask""$iconValue"
-            CURRENT_MONTH_TASKS_LENGTH[nextTaskDayIndex]=$((oldTasksLength + newIconLength))
+          if [ $((nextTaskMonth)) -eq $((CURRENT_MONTH)) ]; then
+            nextTaskDay=${nextTaskValue:6:2}
+            if [ "${nextTaskDay:0:1}" -eq "0" ]; then
+              nextTaskDay=${nextTaskDay:1:1}
+            fi
+            nextTaskDayIndex=$((nextTaskDay - 1))
+            newIconLength=${#iconValue}
+            if [ $((newIconLength % 2)) -ne 0 ]; then
+              newIconLength=$((newIconLength + 1))
+            fi
+            if [ "$specialValue" = "true" ]; then
+              oldTask=${CURRENT_SPECIAL_TASKS[nextTaskDayIndex]}
+              oldTasksLength=$((CURRENT_SPECIAL_TASKS_LENGTH[nextTaskDayIndex]))
+              CURRENT_SPECIAL_TASKS[nextTaskDayIndex]="$oldTask""$iconValue"
+              CURRENT_SPECIAL_TASKS_LENGTH[nextTaskDayIndex]=$((oldTasksLength + newIconLength))
+            else
+              oldTask=${CURRENT_MONTH_TASKS[nextTaskDayIndex]}
+              oldTasksLength=$((CURRENT_MONTH_TASKS_LENGTH[nextTaskDayIndex]))
+              CURRENT_MONTH_TASKS[nextTaskDayIndex]="$oldTask""$iconValue"
+              CURRENT_MONTH_TASKS_LENGTH[nextTaskDayIndex]=$((oldTasksLength + newIconLength))
+            fi
           fi
         fi
         if [ $((intervalDaysValue)) -eq 0 ]; then
@@ -250,9 +280,10 @@ function run() {
   #########
 
   # 日期提醒。
-  printf "%s""$NORMAL_COLOR";printf "\n 今天是 "
+  printf "%s""$NORMAL_COLOR";printf " 今天是 "
   printf "%s""$HIGH_LIGHT_COLOR";printf "%s""${CURRENT_YEAR}年${CURRENT_MONTH}月${CURRENT_DAY}日 星期${WEEK_DAY_NAMES[CURRENT_WEEK_DAY_INDEX]}"
   printf "%s""$NORMAL_COLOR";printf "\n"
+  ((CURRENT_OUTPUT_LINES_COUNT+=1))
 
   # 日历头部。
   printf "%s""$NORMAL_COLOR";printf "━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━\n"
@@ -264,10 +295,13 @@ function run() {
   if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 6 ]; then printf "%s""$HIGH_LIGHT_COLOR"; else printf "%s""$YELLOW_COLOR"; fi;printf "%-10s" "    六    ";printf "%s""$NORMAL_COLOR";printf "┃"
   if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 0 ]; then printf "%s""$HIGH_LIGHT_COLOR"; else printf "%s""$YELLOW_COLOR"; fi;printf "%-10s" "    日    ";printf "%s""$NORMAL_COLOR";printf "\n"
   printf "%s""$NORMAL_COLOR";printf "━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━\n"
+  ((CURRENT_OUTPUT_LINES_COUNT+=3))
 
   # 日历本体。
   totalDays=${#thisMonthDayArr[*]}
   linesCount=$((totalDays / 7))
+  outputLinesCount=$((linesCount * 4))
+  ((CURRENT_OUTPUT_LINES_COUNT+=outputLinesCount))
   for ((index=0;;index++)); do
     if [ $index -eq $((totalDays)) ]; then
       break
@@ -368,12 +402,16 @@ function run() {
   specialIntroductionLength=${#SPECIAL_INTRODUCTION}
   if [ $((specialIntroductionLength)) -gt 0 ]; then
     printf "%s""$NORMAL_COLOR";printf "%s""\n 节日&重要事件：\n$SPECIAL_INTRODUCTION"
+    extraLinesCount=$((SPECIAL_LINES_COUNT + 2))
+    ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
   fi
 
   # Todo任务介绍。
   tasksIntroductionLength=${#TASKS_INTRODUCTION}
   if [ $((tasksIntroductionLength)) -gt 0 ]; then
     printf "%s""$NORMAL_COLOR";printf "%s""\n 图例：\n$TASKS_INTRODUCTION"
+    extraLinesCount=$((TASKS_LINES_COUNT + 2))
+    ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
   fi
 
   # 特殊事件较多日期提醒。
@@ -403,11 +441,117 @@ function run() {
   fi
 
   printf "%s""$NORMAL_COLOR";printf "\n"
+  ((CURRENT_OUTPUT_LINES_COUNT+=1))
+}
+
+# 指令菜单。
+function menuController() {
+  ((CURRENT_OUTPUT_LINES_COUNT+=1))
+  read -r -sn1 -p " 【←或→切换月份；↑或↓切换年份；其他键退出】请输入：" key
+  if [[ $key == $'\e' ]] ; then
+    # 方向键由3个字符组成，再读两次。
+    read -r -sn1 key
+    if [[ "$key" == "[" ]] ; then
+      read -r -sn1 key
+      case $key in
+      A)
+        if [ $((CURRENT_YEAR)) -gt $((MIN_YEAR)) ]; then
+          CURRENT_YEAR=$((CURRENT_YEAR - 1))
+          CURRENT_WEEK_DAY_INDEX=$(date -j -f "%Y-%m-%d" "${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DAY}" "+%u")
+          if [ "${CURRENT_WEEK_DAY_INDEX}" -eq "7" ]; then
+            CURRENT_WEEK_DAY_INDEX=0
+          fi
+        fi
+        printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
+        resetResults
+        run
+        menuController
+        ;;
+      B)
+        if [ $((CURRENT_YEAR)) -lt $((MAX_YEAR)) ]; then
+          CURRENT_YEAR=$((CURRENT_YEAR + 1))
+          CURRENT_WEEK_DAY_INDEX=$(date -j -f "%Y-%m-%d" "${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DAY}" "+%u")
+          if [ "${CURRENT_WEEK_DAY_INDEX}" -eq "7" ]; then
+            CURRENT_WEEK_DAY_INDEX=0
+          fi
+        fi
+        printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
+        resetResults
+        run
+        menuController
+        ;;
+      C)
+        if [ $((CURRENT_YEAR)) -ge $((MAX_YEAR)) ] && [ $((CURRENT_MONTH)) -ge 12 ]; then
+          printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
+          resetResults
+          run
+          menuController
+        elif [ $((CURRENT_MONTH)) -lt 12 ]; then
+          printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
+          CURRENT_MONTH=$((CURRENT_MONTH + 1))
+          CURRENT_WEEK_DAY_INDEX=$(date -j -f "%Y-%m-%d" "${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DAY}" "+%u")
+          if [ "${CURRENT_WEEK_DAY_INDEX}" -eq "7" ]; then
+            CURRENT_WEEK_DAY_INDEX=0
+          fi
+          resetResults
+          run
+          menuController
+        elif [ $((CURRENT_MONTH)) -ge 12 ]; then
+          printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
+          CURRENT_MONTH=1
+          CURRENT_YEAR=$((CURRENT_YEAR + 1))
+          CURRENT_WEEK_DAY_INDEX=$(date -j -f "%Y-%m-%d" "${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DAY}" "+%u")
+          if [ "${CURRENT_WEEK_DAY_INDEX}" -eq "7" ]; then
+            CURRENT_WEEK_DAY_INDEX=0
+          fi
+          resetResults
+          run
+          menuController
+        fi
+        ;;
+      D)
+        if [ $((CURRENT_YEAR)) -le $((MIN_YEAR)) ] && [ $((CURRENT_MONTH)) -le 1 ]; then
+          printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
+          resetResults
+          run
+          menuController
+        elif [ $((CURRENT_MONTH)) -gt 1 ]; then
+          printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
+          CURRENT_MONTH=$((CURRENT_MONTH - 1))
+          CURRENT_WEEK_DAY_INDEX=$(date -j -f "%Y-%m-%d" "${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DAY}" "+%u")
+          if [ "${CURRENT_WEEK_DAY_INDEX}" -eq "7" ]; then
+            CURRENT_WEEK_DAY_INDEX=0
+          fi
+          resetResults
+          run
+          menuController
+        elif [ $((CURRENT_MONTH)) -le 1 ]; then
+          printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
+          CURRENT_MONTH=12
+          CURRENT_YEAR=$((CURRENT_YEAR - 1))
+          CURRENT_WEEK_DAY_INDEX=$(date -j -f "%Y-%m-%d" "${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DAY}" "+%u")
+          if [ "${CURRENT_WEEK_DAY_INDEX}" -eq "7" ]; then
+            CURRENT_WEEK_DAY_INDEX=0
+          fi
+          resetResults
+          run
+          menuController
+        fi
+        ;;
+      esac
+      else
+        printf "\n"
+    fi
+  else
+    printf "\n"
+  fi
 }
 
 tasksPathLength=${#TASKS_PATH}
 if [ $((tasksPathLength)) -eq 0 ]; then
   printf "%s""$NORMAL_COLOR";printf "\n 请先填写任务单所在目录路径。\n\n"
 else
+  printf "\n"
   run
+  menuController
 fi
