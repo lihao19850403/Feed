@@ -260,7 +260,7 @@ function run() {
 
   # 获取本月最后一天是星期几。0表示星期日。
   lastWeekIndex=$((thisMonthDays % 7))
-  lastWeekIndex=$(((firstWeekIndex + lastWeekIndex - 1) % 7))
+  lastWeekIndex=$(((firstWeekIndex + lastWeekIndex + 6) % 7))
 
   # 构造完整月信息。
   thisMonthDayArr=()
