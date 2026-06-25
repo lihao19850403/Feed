@@ -415,29 +415,37 @@ function run() {
   fi
 
   # 特殊事件较多日期提醒。
-  happyDays=""
+  buzySpecialDays=""
+  buzySpecialLinesCount=0
   for ((index=0;index<thisMonthDays;index++)); do
     tasksLength=$((CURRENT_SPECIAL_TASKS_LENGTH[index]))
     if [ $((tasksLength)) -gt 8 ]; then
-      happyDays="$happyDays"" $((index + 1))号特殊事件较多：${CURRENT_SPECIAL_TASKS[index]}\n"
+      buzySpecialDays="$buzySpecialDays"" $((index + 1))号特殊事件较多：${CURRENT_SPECIAL_TASKS[index]}\n"
+      ((buzySpecialLinesCount+=1))
     fi
   done
-  happyDaysLength=${#happyDays}
-  if [ $((happyDaysLength)) -gt 0 ]; then
-    printf "%s""$YELLOW_COLOR";printf "%s""\n 特殊事件较多日提醒：\n$happyDays"
+  buzySpecialDaysLength=${#buzySpecialDays}
+  if [ $((buzySpecialDaysLength)) -gt 0 ]; then
+    printf "%s""$YELLOW_COLOR";printf "%s""\n 特殊事件较多日提醒：\n$buzySpecialDays"
+    extraLinesCount=$((buzySpecialLinesCount + 2))
+    ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
   fi
 
   # 任务较多日期提醒。
-  buzyDays=""
+  buzyTasksDays=""
+  buzyTasksLinesCount=0
   for ((index=0;index<thisMonthDays;index++)); do
     tasksLength=$((CURRENT_MONTH_TASKS_LENGTH[index]))
     if [ $((tasksLength)) -gt 8 ]; then
-      buzyDays="$buzyDays"" $((index + 1))号任务较多：${CURRENT_MONTH_TASKS[index]}\n"
+      buzyTasksDays="$buzyTasksDays"" $((index + 1))号任务较多：${CURRENT_MONTH_TASKS[index]}\n"
+      ((buzyTasksLinesCount+=1))
     fi
   done
-  buzyDaysLength=${#buzyDays}
-  if [ $((buzyDaysLength)) -gt 0 ]; then
-    printf "%s""$HIGH_LIGHT_COLOR";printf "%s""\n 任务繁忙日提醒：\n$buzyDays"
+  buzyTasksDaysLength=${#buzyTasksDays}
+  if [ $((buzyTasksDaysLength)) -gt 0 ]; then
+    printf "%s""$HIGH_LIGHT_COLOR";printf "%s""\n 任务繁忙日提醒：\n$buzyTasksDays"
+    extraLinesCount=$((buzyTasksLinesCount + 2))
+    ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
   fi
 
   printf "%s""$NORMAL_COLOR";printf "\n"
