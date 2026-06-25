@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # 控制台版Todo日历。请先填写任务单所在目录路径。
+
 TASKS_PATH=""
+
+# 一些常量。
 
 HIGH_LIGHT_COLOR="\e[96m"
 YELLOW_COLOR="\e[33m"
@@ -14,7 +17,7 @@ LEAP_MONTH_DAYS=(31 29 31 30 31 30 31 31 30 31 30 31)
 MIN_YEAR=1900
 MAX_YEAR=2200
 
-# 当前日期、时间和Todo任务信息。
+# 当前日期信息。
 
 CURRENT_YEAR=$(date "+%Y")
 CURRENT_MONTH=$(date "+%m")
@@ -41,6 +44,7 @@ CURRENT_MONTH_TASKS=()
 CURRENT_MONTH_TASKS_LENGTH=()
 
 # 记录本次输出了多少行，用于屏幕刷新。
+
 CURRENT_OUTPUT_LINES_COUNT=0
 SPECIAL_LINES_COUNT=0
 TASKS_LINES_COUNT=0
@@ -72,6 +76,21 @@ function checkIfLeapYear() {
     result=0
   fi
   return ${result}
+}
+
+# 检查日期的合法性。返回值0表示不合法，返回值1表示合法。
+function checkIfDateValid() {
+  if [ $((CURRENT_YEAR)) -lt $((MIN_YEAR)) ] || [ $((CURRENT_YEAR)) -gt $((MAX_YEAR)) ]; then
+    return 0
+  fi
+  if [ $((CURRENT_MONTH)) -lt 1 ] || [ $((CURRENT_MONTH)) -gt 12 ]; then
+    return 0
+  fi
+  thisMonthDays=${1}
+  if [ $((CURRENT_DAY)) -lt 1 ] || [ $((CURRENT_DAY)) -gt $((thisMonthDays)) ]; then
+    return 0
+  fi
+  return 1
 }
 
 # 解析Todo事件。
@@ -280,8 +299,15 @@ function run() {
   #########
 
   # 日期提醒。
-  printf "%s""$NORMAL_COLOR";printf " 今天是 "
-  printf "%s""$HIGH_LIGHT_COLOR";printf "%s""${CURRENT_YEAR}年${CURRENT_MONTH}月${CURRENT_DAY}日 星期${WEEK_DAY_NAMES[CURRENT_WEEK_DAY_INDEX]}"
+  checkIfDateValid $((thisMonthDays))
+  isDateValid=$?
+  if [ $((isDateValid)) -eq 1 ]; then
+    printf "%s""$NORMAL_COLOR";printf " 今天是 "
+    printf "%s""$HIGH_LIGHT_COLOR";printf "%s""${CURRENT_YEAR}年${CURRENT_MONTH}月${CURRENT_DAY}日 星期${WEEK_DAY_NAMES[CURRENT_WEEK_DAY_INDEX]}"
+  else
+    printf "%s""$NORMAL_COLOR";printf " 日期并不存在："
+    printf "%s""$HIGH_LIGHT_COLOR";printf "%s""${CURRENT_YEAR}年${CURRENT_MONTH}月${CURRENT_DAY}日"
+  fi
   printf "%s""$NORMAL_COLOR";printf "\n"
   ((CURRENT_OUTPUT_LINES_COUNT+=1))
 
