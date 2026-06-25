@@ -495,11 +495,15 @@ function menuController() {
           if [ "${CURRENT_WEEK_DAY_INDEX}" -eq "7" ]; then
             CURRENT_WEEK_DAY_INDEX=0
           fi
+          printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
+          resetResults
+          run
+          menuController
+        else
+          printf "\e[1A\e[J\n"
+          ((CURRENT_OUTPUT_LINES_COUNT-=1))
+          menuController
         fi
-        printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
-        resetResults
-        run
-        menuController
         ;;
       B)
         if [ $((CURRENT_YEAR)) -lt $((MAX_YEAR)) ]; then
@@ -508,17 +512,20 @@ function menuController() {
           if [ "${CURRENT_WEEK_DAY_INDEX}" -eq "7" ]; then
             CURRENT_WEEK_DAY_INDEX=0
           fi
-        fi
-        printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
-        resetResults
-        run
-        menuController
-        ;;
-      C)
-        if [ $((CURRENT_YEAR)) -ge $((MAX_YEAR)) ] && [ $((CURRENT_MONTH)) -ge 12 ]; then
           printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
           resetResults
           run
+          menuController
+        else
+          printf "\e[1A\e[J\n"
+          ((CURRENT_OUTPUT_LINES_COUNT-=1))
+          menuController
+        fi
+        ;;
+      C)
+        if [ $((CURRENT_YEAR)) -ge $((MAX_YEAR)) ] && [ $((CURRENT_MONTH)) -ge 12 ]; then
+          printf "\e[1A\e[J\n"
+          ((CURRENT_OUTPUT_LINES_COUNT-=1))
           menuController
         elif [ $((CURRENT_MONTH)) -lt 12 ]; then
           printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
@@ -545,9 +552,8 @@ function menuController() {
         ;;
       D)
         if [ $((CURRENT_YEAR)) -le $((MIN_YEAR)) ] && [ $((CURRENT_MONTH)) -le 1 ]; then
-          printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
-          resetResults
-          run
+          printf "\e[1A\e[J\n"
+          ((CURRENT_OUTPUT_LINES_COUNT-=1))
           menuController
         elif [ $((CURRENT_MONTH)) -gt 1 ]; then
           printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
@@ -574,10 +580,10 @@ function menuController() {
         ;;
       esac
       else
-        printf "\n"
+        printf "\e[1A\e[J\n"
     fi
   else
-    printf "\n"
+    printf "\e[1A\e[J\n"
   fi
 }
 
