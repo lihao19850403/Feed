@@ -49,6 +49,10 @@ CURRENT_OUTPUT_LINES_COUNT=0
 SPECIAL_LINES_COUNT=0
 TASKS_LINES_COUNT=0
 
+# 标记当前脚本是否正在执行。0表示不再执行，可以结束了，1表示脚本正在执行，还没有结束。
+
+RUNNING=1
+
 # 重置计算结果。
 function resetResults() {
   SPECIAL_INTRODUCTION=""
@@ -91,6 +95,12 @@ function checkIfDateValid() {
     return 0
   fi
   return 1
+}
+
+# 响应Ctrl+C事件。模拟用户输入，进行程序的退出。
+trap 'onCtrlC' INT
+function onCtrlC() {
+  RUNNING=0
 }
 
 # 解析Todo事件。
@@ -481,7 +491,7 @@ function run() {
 # 指令菜单。
 function menuController() {
   ((CURRENT_OUTPUT_LINES_COUNT+=1))
-  read -r -sn1 -p " 【←或→切换月份；↑或↓切换年份；其他键退出】请输入：" key
+  read -t 1 -r -sn1 -p " 【←或→切换月份；↑或↓切换年份；Ctrl+C退出】请输入：" key
   if [[ $key == $'\e' ]] ; then
     # 方向键由3个字符组成，再读两次。
     read -r -sn1 key
@@ -579,11 +589,7 @@ function menuController() {
         fi
         ;;
       esac
-      else
-        printf "\e[1A\e[J\n"
     fi
-  else
-    printf "\e[1A\e[J\n"
   fi
 }
 
@@ -594,4 +600,10 @@ else
   printf "\n"
   run
   menuController
+  while [ $((RUNNING)) -eq 1 ]; do
+    printf "\e[1A\e[J\n"
+    ((CURRENT_OUTPUT_LINES_COUNT-=1))
+    menuController
+  done
+  printf "\e[1A\e[J\n"
 fi
