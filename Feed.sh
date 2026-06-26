@@ -1,8 +1,16 @@
 #!/bin/bash
 
-# 控制台版Todo日历。请先填写任务单所在目录路径。
+# ━━━━━━━━━━━━━━━━━━━━
+#  控制台版Todo日历。
+# ━━━━━━━━━━━━━━━━━━━━
 
-TASKS_PATH=""
+# 脚本所在位置。
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+# 任务单所在目录路径。
+
+TASKS_PATH="${SCRIPT_DIR}/Tasks"
 
 # 一些常量。
 
@@ -100,6 +108,7 @@ function checkIfDateValid() {
 # 响应Ctrl+C事件。模拟用户输入，进行程序的退出。
 trap 'onCtrlC' INT
 function onCtrlC() {
+  printf "程序结束"
   RUNNING=0
 }
 
@@ -250,8 +259,8 @@ function parseTasks() {
   done
 }
 
-# 执行。
-function run() {
+# 主功能函数。
+function main() {
   # 获取本月一共多少天。
   checkIfLeapYear $((CURRENT_YEAR))
   isLeapYear=$?
@@ -507,7 +516,7 @@ function menuController() {
           fi
           printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
           resetResults
-          run
+          main
           menuController
         else
           printf "\e[1A\e[J\n"
@@ -524,7 +533,7 @@ function menuController() {
           fi
           printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
           resetResults
-          run
+          main
           menuController
         else
           printf "\e[1A\e[J\n"
@@ -545,7 +554,7 @@ function menuController() {
             CURRENT_WEEK_DAY_INDEX=0
           fi
           resetResults
-          run
+          main
           menuController
         elif [ $((CURRENT_MONTH)) -ge 12 ]; then
           printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
@@ -556,7 +565,7 @@ function menuController() {
             CURRENT_WEEK_DAY_INDEX=0
           fi
           resetResults
-          run
+          main
           menuController
         fi
         ;;
@@ -573,7 +582,7 @@ function menuController() {
             CURRENT_WEEK_DAY_INDEX=0
           fi
           resetResults
-          run
+          main
           menuController
         elif [ $((CURRENT_MONTH)) -le 1 ]; then
           printf "\e[";printf "%s""${CURRENT_OUTPUT_LINES_COUNT}";printf "A\e[J\n"
@@ -584,7 +593,7 @@ function menuController() {
             CURRENT_WEEK_DAY_INDEX=0
           fi
           resetResults
-          run
+          main
           menuController
         fi
         ;;
@@ -593,12 +602,10 @@ function menuController() {
   fi
 }
 
-tasksPathLength=${#TASKS_PATH}
-if [ $((tasksPathLength)) -eq 0 ]; then
-  printf "%s""$NORMAL_COLOR";printf "\n 请先填写任务单所在目录路径。\n\n"
-else
+# 启动。
+function start() {
   printf "\n"
-  run
+  main
   menuController
   while [ $((RUNNING)) -eq 1 ]; do
     printf "\e[1A\e[J\n"
@@ -606,4 +613,6 @@ else
     menuController
   done
   printf "\e[1A\e[J\n"
-fi
+}
+
+start
