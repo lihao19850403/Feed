@@ -16,7 +16,7 @@ TASKS_PATH="${SCRIPT_DIR}/Tasks"
 
 HIGH_LIGHT_COLOR="\e[96m"
 YELLOW_COLOR="\e[33m"
-NORMAL_COLOR="\e[37m"
+COLOR_END="\e[0m"
 
 WEEK_DAY_NAMES=("日" "一" "二" "三" "四" "五" "六")
 NORMAL_MONTH_DAYS=(31 28 31 30 31 30 31 31 30 31 30 31)
@@ -323,25 +323,78 @@ function main() {
   checkIfDateValid $((thisMonthDays))
   isDateValid=$?
   if [ $((isDateValid)) -eq 1 ]; then
-    printf "%s""$NORMAL_COLOR";printf " 今天是 "
-    printf "%s""$HIGH_LIGHT_COLOR";printf "%s""${CURRENT_YEAR}年${CURRENT_MONTH}月${CURRENT_DAY}日 星期${WEEK_DAY_NAMES[CURRENT_WEEK_DAY_INDEX]}"
+    printf " 今天是 "
+    printf "%s""$HIGH_LIGHT_COLOR";printf "%s""${CURRENT_YEAR}年${CURRENT_MONTH}月${CURRENT_DAY}日 星期${WEEK_DAY_NAMES[CURRENT_WEEK_DAY_INDEX]}";printf "%s""$COLOR_END"
   else
-    printf "%s""$NORMAL_COLOR";printf " 日期并不存在："
-    printf "%s""$HIGH_LIGHT_COLOR";printf "%s""${CURRENT_YEAR}年${CURRENT_MONTH}月${CURRENT_DAY}日"
+    printf " 日期并不存在："
+    printf "%s""$HIGH_LIGHT_COLOR";printf "%s""${CURRENT_YEAR}年${CURRENT_MONTH}月${CURRENT_DAY}日";printf "%s""$COLOR_END"
   fi
-  printf "%s""$NORMAL_COLOR";printf "\n"
+  printf "\n"
   ((CURRENT_OUTPUT_LINES_COUNT+=1))
 
   # 日历头部。
-  printf "%s""$NORMAL_COLOR";printf "━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━\n"
-  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 1 ]; then printf "%s""$HIGH_LIGHT_COLOR"; else printf "%s""$NORMAL_COLOR"; fi;printf "%-10s" "    一    ";printf "%s""$NORMAL_COLOR";printf "┃"
-  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 2 ]; then printf "%s""$HIGH_LIGHT_COLOR"; else printf "%s""$NORMAL_COLOR"; fi;printf "%-10s" "    二    ";printf "%s""$NORMAL_COLOR";printf "┃"
-  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 3 ]; then printf "%s""$HIGH_LIGHT_COLOR"; else printf "%s""$NORMAL_COLOR"; fi;printf "%-10s" "    三    ";printf "%s""$NORMAL_COLOR";printf "┃"
-  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 4 ]; then printf "%s""$HIGH_LIGHT_COLOR"; else printf "%s""$NORMAL_COLOR"; fi;printf "%-10s" "    四    ";printf "%s""$NORMAL_COLOR";printf "┃"
-  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 5 ]; then printf "%s""$HIGH_LIGHT_COLOR"; else printf "%s""$NORMAL_COLOR"; fi;printf "%-10s" "    五    ";printf "%s""$NORMAL_COLOR";printf "┃"
-  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 6 ]; then printf "%s""$HIGH_LIGHT_COLOR"; else printf "%s""$YELLOW_COLOR"; fi;printf "%-10s" "    六    ";printf "%s""$NORMAL_COLOR";printf "┃"
-  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 0 ]; then printf "%s""$HIGH_LIGHT_COLOR"; else printf "%s""$YELLOW_COLOR"; fi;printf "%-10s" "    日    ";printf "%s""$NORMAL_COLOR";printf "\n"
-  printf "%s""$NORMAL_COLOR";printf "━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━\n"
+  printf "━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━\n"
+  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 1 ]; then
+    printf "%s""$HIGH_LIGHT_COLOR"
+    printf "%-10s" "    一    "
+    printf "%s""$COLOR_END"
+  else
+    printf "%-10s" "    一    "
+  fi
+  printf "┃"
+  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 2 ]; then
+    printf "%s""$HIGH_LIGHT_COLOR";
+    printf "%-10s" "    二    "
+    printf "%s""$COLOR_END"
+  else
+    printf "%-10s" "    二    "
+  fi
+  printf "┃"
+  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 3 ]; then
+    printf "%s""$HIGH_LIGHT_COLOR";
+    printf "%-10s" "    三    "
+    printf "%s""$COLOR_END"
+  else
+    printf "%-10s" "    三    "
+  fi
+  printf "┃"
+  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 4 ]; then
+    printf "%s""$HIGH_LIGHT_COLOR";
+    printf "%-10s" "    四    "
+    printf "%s""$COLOR_END"
+  else
+    printf "%-10s" "    四    "
+  fi
+  printf "┃"
+  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 5 ]; then
+    printf "%s""$HIGH_LIGHT_COLOR";
+    printf "%-10s" "    五    "
+    printf "%s""$COLOR_END"
+  else
+    printf "%-10s" "    五    "
+  fi
+  printf "┃"
+  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 6 ]; then
+    printf "%s""$HIGH_LIGHT_COLOR";
+    printf "%-10s" "    六    "
+    printf "%s""$COLOR_END"
+  else
+    printf "%s""$YELLOW_COLOR"
+    printf "%-10s" "    六    "
+    printf "%s""$COLOR_END"
+  fi
+  printf "┃"
+  if [ $((CURRENT_WEEK_DAY_INDEX)) -eq 0 ]; then
+    printf "%s""$HIGH_LIGHT_COLOR";
+    printf "%-10s" "    日    "
+    printf "%s""$COLOR_END"
+  else
+    printf "%s""$YELLOW_COLOR"
+    printf "%-10s" "    日    "
+    printf "%s""$COLOR_END"
+  fi
+  printf "\n"
+  printf "━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━\n"
   ((CURRENT_OUTPUT_LINES_COUNT+=3))
 
   # 日历本体。
@@ -355,24 +408,27 @@ function main() {
     fi
     # 第一行打印日期信息。
     if [ $((thisMonthDayArr[index])) -eq 0 ]; then
-      printf "%s""$NORMAL_COLOR";printf "%-10s" "          "
+      printf "%-10s" "          "
     else
       if [ $((thisMonthDayArr[index])) -eq $((CURRENT_DAY)) ]; then
         printf "%s""$HIGH_LIGHT_COLOR";
+        printf "%-10s" " $((thisMonthDayArr[index]))"
+        printf "%s""$COLOR_END"
       elif [ $((index % 7)) -eq 5 ] || [ $((index % 7)) -eq 6 ]; then
         printf "%s""$YELLOW_COLOR";
+        printf "%-10s" " $((thisMonthDayArr[index]))"
+        printf "%s""$COLOR_END"
       else
-        printf "%s""$NORMAL_COLOR";
+        printf "%-10s" " $((thisMonthDayArr[index]))"
       fi
-      printf "%-10s" " $((thisMonthDayArr[index]))"
     fi
     if [ $((index % 7)) -eq 6 ]; then
-      printf "%s""$NORMAL_COLOR";printf "\n"
+      printf "\n"
       # 第二行打印特殊事件图标。
       specialStartIndex=$((index - 6))
       for ((specialCheck=0;specialCheck<7;specialCheck++)); do
         if [ $((thisMonthDayArr[specialStartIndex])) -eq 0 ]; then
-          printf "%s""$NORMAL_COLOR";printf "%-10s" "          "
+          printf "%-10s" "          "
         else
           realTaskIndex=$((specialStartIndex-preEmptyDaysCount))
           tasks="${CURRENT_SPECIAL_TASKS[realTaskIndex]}"
@@ -380,27 +436,30 @@ function main() {
           if [ $((tasksLength)) -gt 8 ]; then
             if [ $((thisMonthDayArr[specialStartIndex])) -eq $((CURRENT_DAY)) ]; then
               printf "%s""$HIGH_LIGHT_COLOR";
+              printf "%-10s" "节日大事多"
+              printf "%s""$COLOR_END"
             elif [ $((specialStartIndex % 7)) -eq 5 ] || [ $((specialStartIndex % 7)) -eq 6 ]; then
               printf "%s""$YELLOW_COLOR";
+              printf "%-10s" "节日大事多"
+              printf "%s""$COLOR_END"
             else
-              printf "%s""$NORMAL_COLOR";
+              printf "%-10s" "节日大事多"
             fi
-            printf "%-10s" "节日大事多"
           else
             appendBlanksCount=$((8 - tasksLength))
             for ((blankIndex=0;blankIndex<appendBlanksCount;blankIndex++)); do
               tasks="${tasks}"" "
             done
-            printf "%s""$NORMAL_COLOR";printf "%-10s" " ${tasks} "
+            printf "%-10s" " ${tasks} "
           fi
         fi
         if [ $((specialStartIndex % 7)) -eq 6 ]; then
-          printf "%s""$NORMAL_COLOR";printf "\n"
+          printf "\n"
           # 第三行打印Todo事件图标。
           taskStartIndex=$((index - 6))
           for ((taskCheck=0;taskCheck<7;taskCheck++)); do
             if [ $((thisMonthDayArr[taskStartIndex])) -eq 0 ]; then
-              printf "%s""$NORMAL_COLOR";printf "%-10s" "          "
+              printf "%-10s" "          "
             else
               realTaskIndex=$((taskStartIndex-preEmptyDaysCount))
               tasks="${CURRENT_MONTH_TASKS[realTaskIndex]}"
@@ -408,47 +467,50 @@ function main() {
               if [ $((tasksLength)) -gt 8 ]; then
                 if [ $((thisMonthDayArr[taskStartIndex])) -eq $((CURRENT_DAY)) ]; then
                   printf "%s""$HIGH_LIGHT_COLOR";
+                  printf "%-10s" " 任务较多 "
+                  printf "%s""$COLOR_END"
                 elif [ $((taskStartIndex % 7)) -eq 5 ] || [ $((taskStartIndex % 7)) -eq 6 ]; then
                   printf "%s""$YELLOW_COLOR";
+                  printf "%-10s" " 任务较多 "
+                  printf "%s""$COLOR_END"
                 else
-                  printf "%s""$NORMAL_COLOR";
+                  printf "%-10s" " 任务较多 "
                 fi
-                printf "%-10s" " 任务较多 "
               else
                 appendBlanksCount=$((8 - tasksLength))
                 for ((blankIndex=0;blankIndex<appendBlanksCount;blankIndex++)); do
                   tasks="${tasks}"" "
                 done
-                printf "%s""$NORMAL_COLOR";printf "%-10s" " ${tasks} "
+                printf "%-10s" " ${tasks} "
               fi
             fi
             if [ $((taskStartIndex % 7)) -eq 6 ]; then
-              printf "%s""$NORMAL_COLOR";printf "\n"
+              printf "\n"
             else
-              printf "%s""$NORMAL_COLOR";printf "┃"
+              printf "┃"
             fi
             taskStartIndex=$((taskStartIndex + 1))
           done
         else
-          printf "%s""$NORMAL_COLOR";printf "┃"
+          printf "┃"
         fi
         specialStartIndex=$((specialStartIndex + 1))
       done
       # 打印行尾制表符。
       if [ $((index / 7 + 1)) -eq $((linesCount)) ]; then
-        printf "%s""$NORMAL_COLOR";printf "━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━\n"
+        printf "━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━\n"
       else
-        printf "%s""$NORMAL_COLOR";printf "━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━\n"
+        printf "━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━\n"
       fi
     else
-      printf "%s""$NORMAL_COLOR";printf "┃"
+      printf "┃"
     fi
   done
 
   # 特殊事件介绍。
   specialIntroductionLength=${#SPECIAL_INTRODUCTION}
   if [ $((specialIntroductionLength)) -gt 0 ]; then
-    printf "%s""$NORMAL_COLOR";printf "%s""\n 节日&重要事件：\n$SPECIAL_INTRODUCTION"
+    printf "%s""\n 节日&重要事件：\n$SPECIAL_INTRODUCTION"
     extraLinesCount=$((SPECIAL_LINES_COUNT + 2))
     ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
   fi
@@ -456,46 +518,46 @@ function main() {
   # Todo任务介绍。
   tasksIntroductionLength=${#TASKS_INTRODUCTION}
   if [ $((tasksIntroductionLength)) -gt 0 ]; then
-    printf "%s""$NORMAL_COLOR";printf "%s""\n 图例：\n$TASKS_INTRODUCTION"
+    printf "%s""\n 图例：\n$TASKS_INTRODUCTION"
     extraLinesCount=$((TASKS_LINES_COUNT + 2))
     ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
   fi
 
   # 特殊事件较多日期提醒。
-  buzySpecialDays=""
-  buzySpecialLinesCount=0
+  busySpecialDays=""
+  busySpecialLinesCount=0
   for ((index=0;index<thisMonthDays;index++)); do
     tasksLength=$((CURRENT_SPECIAL_TASKS_LENGTH[index]))
     if [ $((tasksLength)) -gt 8 ]; then
-      buzySpecialDays="$buzySpecialDays"" $((index + 1))号特殊事件较多：${CURRENT_SPECIAL_TASKS[index]}\n"
-      ((buzySpecialLinesCount+=1))
+      busySpecialDays="$busySpecialDays"" $((index + 1))号特殊事件较多：${CURRENT_SPECIAL_TASKS[index]}\n"
+      ((busySpecialLinesCount+=1))
     fi
   done
-  buzySpecialDaysLength=${#buzySpecialDays}
-  if [ $((buzySpecialDaysLength)) -gt 0 ]; then
-    printf "%s""$YELLOW_COLOR";printf "%s""\n 特殊事件较多日提醒：\n$buzySpecialDays"
-    extraLinesCount=$((buzySpecialLinesCount + 2))
+  busySpecialDaysLength=${#busySpecialDays}
+  if [ $((busySpecialDaysLength)) -gt 0 ]; then
+    printf "%s""$YELLOW_COLOR";printf "%s""\n 特殊事件较多日提醒：\n$busySpecialDays";printf "%s""$COLOR_END"
+    extraLinesCount=$((busySpecialLinesCount + 2))
     ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
   fi
 
   # 任务较多日期提醒。
-  buzyTasksDays=""
-  buzyTasksLinesCount=0
+  busyTasksDays=""
+  busyTasksLinesCount=0
   for ((index=0;index<thisMonthDays;index++)); do
     tasksLength=$((CURRENT_MONTH_TASKS_LENGTH[index]))
     if [ $((tasksLength)) -gt 8 ]; then
-      buzyTasksDays="$buzyTasksDays"" $((index + 1))号任务较多：${CURRENT_MONTH_TASKS[index]}\n"
-      ((buzyTasksLinesCount+=1))
+      busyTasksDays="$busyTasksDays"" $((index + 1))号任务较多：${CURRENT_MONTH_TASKS[index]}\n"
+      ((busyTasksLinesCount+=1))
     fi
   done
-  buzyTasksDaysLength=${#buzyTasksDays}
-  if [ $((buzyTasksDaysLength)) -gt 0 ]; then
-    printf "%s""$HIGH_LIGHT_COLOR";printf "%s""\n 任务繁忙日提醒：\n$buzyTasksDays"
-    extraLinesCount=$((buzyTasksLinesCount + 2))
+  busyTasksDaysLength=${#busyTasksDays}
+  if [ $((busyTasksDaysLength)) -gt 0 ]; then
+    printf "%s""$HIGH_LIGHT_COLOR";printf "%s""\n 任务繁忙日提醒：\n$busyTasksDays";printf "%s""$COLOR_END"
+    extraLinesCount=$((busyTasksLinesCount + 2))
     ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
   fi
 
-  printf "%s""$NORMAL_COLOR";printf "\n"
+  printf "\n"
   ((CURRENT_OUTPUT_LINES_COUNT+=1))
 }
 
@@ -503,10 +565,10 @@ function main() {
 function menuController() {
   ((CURRENT_OUTPUT_LINES_COUNT+=1))
   read -t 1 -r -sn1 -p " 【←或→切换月份；↑或↓切换年份；Ctrl+C退出】请输入：" key
-  if [[ $key == $'\e' ]] ; then
+  if [[ $key == $'\e' ]]; then
     # 方向键由3个字符组成，再读两次。
     read -r -sn1 key
-    if [[ "$key" == "[" ]] ; then
+    if [[ "$key" == "[" ]]; then
       read -r -sn1 key
       if [ $((RUNNING)) -eq 1 ]; then
         case $key in
