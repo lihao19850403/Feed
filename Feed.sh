@@ -14,7 +14,7 @@ TASKS_PATH="${SCRIPT_DIR}/Tasks"
 
 # 一些常量。
 
-HIGH_LIGHT_COLOR="\e[96m"
+HIGH_LIGHT_COLOR="\e[36m"
 YELLOW_COLOR="\e[33m"
 COLOR_END="\e[0m"
 
