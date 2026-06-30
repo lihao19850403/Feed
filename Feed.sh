@@ -25,6 +25,8 @@ LEAP_MONTH_DAYS=(31 29 31 30 31 30 31 31 30 31 30 31)
 MIN_YEAR=1900
 MAX_YEAR=2200
 
+SPECIAL_ICONS="🛏️ ❄️ ✈️" # 特殊符号，用空格分隔。
+
 # 当前日期信息。
 
 CURRENT_YEAR=$(date "+%Y")
@@ -103,6 +105,15 @@ function checkIfDateValid() {
     return 0
   fi
   return 1
+}
+
+# 打印常态任务字符串，含有特殊字符处理流程。
+function normalTasksPrintHandler() {
+  tasks=${1}
+  for icon in $SPECIAL_ICONS; do
+    tasks=${tasks//${icon}/${icon} }
+  done
+  printf "%-10s" " ${tasks} "
 }
 
 # 响应Ctrl+C事件。模拟用户输入，进行程序的退出。
@@ -450,7 +461,7 @@ function main() {
             for ((blankIndex=0;blankIndex<appendBlanksCount;blankIndex++)); do
               tasks="${tasks}"" "
             done
-            printf "%-10s" " ${tasks} "
+            normalTasksPrintHandler "${tasks}"
           fi
         fi
         if [ $((specialStartIndex % 7)) -eq 6 ]; then
@@ -481,7 +492,7 @@ function main() {
                 for ((blankIndex=0;blankIndex<appendBlanksCount;blankIndex++)); do
                   tasks="${tasks}"" "
                 done
-                printf "%-10s" " ${tasks} "
+                normalTasksPrintHandler "${tasks}"
               fi
             fi
             if [ $((taskStartIndex % 7)) -eq 6 ]; then
@@ -510,6 +521,9 @@ function main() {
   # 特殊事件介绍。
   specialIntroductionLength=${#SPECIAL_INTRODUCTION}
   if [ $((specialIntroductionLength)) -gt 0 ]; then
+    for icon in $SPECIAL_ICONS; do
+      SPECIAL_INTRODUCTION=${SPECIAL_INTRODUCTION//${icon}/${icon} }
+    done
     printf "%s""\n 节日&重要事件：\n$SPECIAL_INTRODUCTION"
     extraLinesCount=$((SPECIAL_LINES_COUNT + 2))
     ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
@@ -518,6 +532,9 @@ function main() {
   # Todo任务介绍。
   tasksIntroductionLength=${#TASKS_INTRODUCTION}
   if [ $((tasksIntroductionLength)) -gt 0 ]; then
+    for icon in $SPECIAL_ICONS; do
+      TASKS_INTRODUCTION=${TASKS_INTRODUCTION//${icon}/${icon} }
+    done
     printf "%s""\n 图例：\n$TASKS_INTRODUCTION"
     extraLinesCount=$((TASKS_LINES_COUNT + 2))
     ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
@@ -535,6 +552,9 @@ function main() {
   done
   busySpecialDaysLength=${#busySpecialDays}
   if [ $((busySpecialDaysLength)) -gt 0 ]; then
+    for icon in $SPECIAL_ICONS; do
+      busySpecialDays=${busySpecialDays//${icon}/${icon} }
+    done
     printf "%s""$YELLOW_COLOR";printf "%s""\n 特殊事件较多日提醒：\n$busySpecialDays";printf "%s""$COLOR_END"
     extraLinesCount=$((busySpecialLinesCount + 2))
     ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
@@ -552,6 +572,9 @@ function main() {
   done
   busyTasksDaysLength=${#busyTasksDays}
   if [ $((busyTasksDaysLength)) -gt 0 ]; then
+    for icon in $SPECIAL_ICONS; do
+      busyTasksDays=${busyTasksDays//${icon}/${icon} }
+    done
     printf "%s""$HIGH_LIGHT_COLOR";printf "%s""\n 任务繁忙日提醒：\n$busyTasksDays";printf "%s""$COLOR_END"
     extraLinesCount=$((busyTasksLinesCount + 2))
     ((CURRENT_OUTPUT_LINES_COUNT+=extraLinesCount))
